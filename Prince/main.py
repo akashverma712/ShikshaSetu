@@ -34,14 +34,15 @@ def compute_fee_weight(months_unpaid):
 
 def get_zone(final_score):
     """
-    Zone thresholds updated for smoother continuous rule_score.
+    Zone thresholds for percentage scores.
     """
-    if final_score >= 0.55:
+    if final_score >= 55:
         return "Red Zone"
-    elif final_score >= 0.30:
+    elif final_score >= 30:
         return "Yellow Zone"
     else:
         return "Green Zone"
+
 
 @app.post("/predict/batch")
 async def batch_predict(
@@ -69,7 +70,7 @@ async def batch_predict(
 
         ml_features = ["attendance", "avg_score", "fee_weight", "rule_score"]
         df["ml_pred"] = ml_model.predict_proba(df[ml_features].fillna(0))[:, 1]
-        df["final_score"] = (df["ml_pred"] + df["rule_score"]) / 2
+        df["final_score"] = ((df["ml_pred"] + df["rule_score"]) / 2) * 100
 
 
         df["risk_zone"] = df["final_score"].apply(get_zone)
